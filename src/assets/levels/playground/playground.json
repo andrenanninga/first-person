@@ -65,10 +65,10 @@
                  "name":"spawnTrigger",
                  "properties":
                     {
-                     "monsterTrigger":true,
-                     "playerTrigger":false,
-                     "repeat":0.5,
-                     "spawn":"[{\"name\": \"shaman1\",\"delay\": 0},{\"name\": \"shaman2\",\"delay\": 400}]"
+                     "monsterTrigger":false,
+                     "playerTrigger":true,
+                     "repeat":0,
+                     "spawn":"[{\"name\": \"shaman1\",\"delay\": 1000},{\"name\": \"shaman2\",\"delay\": 1400}]"
                     },
                  "propertytypes":
                     {
@@ -85,36 +85,6 @@
                  "y":240
                 }, 
                 {
-                 "height":6.4,
-                 "id":7,
-                 "name":"shaman2",
-                 "rotation":0,
-                 "type":"Shaman",
-                 "visible":true,
-                 "width":6.4,
-                 "x":281.583,
-                 "y":272.083
-                }, 
-                {
-                 "height":6.5,
-                 "id":10,
-                 "name":"shaman1",
-                 "properties":
-                    {
-                     "autoSpawn":false
-                    },
-                 "propertytypes":
-                    {
-                     "autoSpawn":"bool"
-                    },
-                 "rotation":0,
-                 "type":"Shaman",
-                 "visible":true,
-                 "width":6.25,
-                 "x":247.625,
-                 "y":292.25
-                }, 
-                {
                  "height":8,
                  "id":11,
                  "name":"player",
@@ -122,8 +92,8 @@
                  "type":"Player",
                  "visible":true,
                  "width":8,
-                 "x":100,
-                 "y":36
+                 "x":213,
+                 "y":226.333
                 }, 
                 {
                  "height":12.6667,
@@ -151,26 +121,50 @@
                  "y":161.667
                 }, 
                 {
-                 "height":6.4,
-                 "id":18,
-                 "name":"shaman2",
+                 "height":5.66667,
+                 "id":20,
+                 "name":"shaman1",
+                 "properties":
+                    {
+                     "autoSpawn":false,
+                     "hard":false,
+                     "health":100
+                    },
+                 "propertytypes":
+                    {
+                     "autoSpawn":"bool",
+                     "hard":"bool",
+                     "health":"int"
+                    },
                  "rotation":0,
                  "type":"Shaman",
                  "visible":true,
-                 "width":6.4,
-                 "x":133.467,
-                 "y":182.133
+                 "width":7.33333,
+                 "x":268.333,
+                 "y":277.333
                 }, 
                 {
-                 "height":6.4,
-                 "id":19,
+                 "height":5.66667,
+                 "id":23,
                  "name":"shaman2",
+                 "properties":
+                    {
+                     "autoSpawn":false,
+                     "hard":false,
+                     "health":100
+                    },
+                 "propertytypes":
+                    {
+                     "autoSpawn":"bool",
+                     "hard":"bool",
+                     "health":"int"
+                    },
                  "rotation":0,
                  "type":"Shaman",
                  "visible":true,
-                 "width":6.4,
-                 "x":102.467,
-                 "y":102.467
+                 "width":7.33333,
+                 "x":250.667,
+                 "y":292.833
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -178,7 +172,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":20,
+ "nextobjectid":24,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.0.3",

@@ -4,7 +4,7 @@ import { flatten } from 'lodash';
 
 import { CATEGORY } from '../Physics';
 
-const PLAYER_FOV = 60;
+const PLAYER_FOV = 75;
 const SPEED = 80;
 const TURN = 4;
 

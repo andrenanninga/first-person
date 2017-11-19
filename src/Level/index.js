@@ -107,7 +107,10 @@ export default class Level extends THREE.Group {
 					return;
 
 				case 'Shaman':
-					this.entities.add(new Shaman(this.game, this, entity));
+					console.log(entity);
+					if (entity.properties.autoSpawn) {
+						this.entities.add(new Shaman(this.game, this, entity));
+					}
 					return;
 
 				default:

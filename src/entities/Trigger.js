@@ -1,6 +1,8 @@
 import * as THREE from 'three';
-import { Events } from 'matter-js';
+import { find } from 'lodash';
+
 import { CATEGORY } from '../Physics';
+import Shaman from './Shaman';
 
 const ACTIVE_COLOR = '#ff00ff';
 const COOLDOWN_COLOR = '#990099';
@@ -62,8 +64,19 @@ export default class Trigger extends THREE.Mesh {
 		this.cooldown = this.definition.properties.repeat || Number.MAX_SAFE_INTEGER;
 
 		if (!!this.definition.properties.spawn && this.definition.properties.spawn.length > 0) {
-			const spawn = JSON.parse(this.definition.properties.spawn);
-			console.log(spawn);
+			const entities = find(this.level.definition.layers, { name: 'entities' }).objects;
+
+			const spawns = JSON.parse(this.definition.properties.spawn);
+
+			spawns.forEach(spawn => {
+				const entity = find(entities, { name: spawn.name });
+
+				if (entity) {
+					setTimeout(() => {
+						this.level.entities.add(new Shaman(this.game, this.level, entity));
+					}, spawn.delay);
+				}
+			});
 		}
 	}
 }
