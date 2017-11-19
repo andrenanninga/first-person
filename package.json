@@ -1,0 +1,39 @@
+{
+  "name": "three-boilerplate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server",
+    "build": "webpack --config ./webpack.config.prod.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gsap": "^1.19.1",
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
+    "matter-collision-events": "^0.1.7",
+    "matter-js": "^0.13.0",
+    "normalize-css": "^2.3.1",
+    "orbit-controls-es6": "^1.0.10",
+    "stats.js": "^0.17.0",
+    "three": "^0.88.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "browser-sync": "^2.18.8",
+    "browser-sync-webpack-plugin": "^1.1.4",
+    "file-loader": "^1.1.5",
+    "get-pixels": "^3.3.0",
+    "image-webpack-loader": "^3.4.2",
+    "webpack": "^2.5.1",
+    "webpack-dev-server": "^2.4.5",
+    "xml-loader": "^1.2.1"
+  }
+}
