@@ -15,10 +15,12 @@ const requireTsx = require.context('../assets/sprites', true, /\.tsx$/);
 
 const levels = {
 	playground: require('../assets/levels/playground/playground'),
+	cave: require('../assets/levels/cave/cave'),
 };
 
 export default class Level extends THREE.Group {
 	static PLAYGROUND = 'playground';
+	static CAVE = 'cave';
 
 	constructor(game, level) {
 		super();
@@ -67,9 +69,15 @@ export default class Level extends THREE.Group {
 		this.chunks = new THREE.Group();
 		this.entities = new THREE.Group();
 
-		this.ceiling = find(this.definition.layers, { name: 'ceiling' });
-		this.walls = find(this.definition.layers, { name: 'walls' });
-		this.floor = find(this.definition.layers, { name: 'floor' });
+		this.layers = {
+			ceiling: find(this.definition.layers, { name: 'ceiling' }),
+			walls: find(this.definition.layers, { name: 'walls' }),
+			floor: find(this.definition.layers, { name: 'floor' }),
+			collision: find(this.definition.layers, { name: 'collision' }),
+			entities: find(this.definition.layers, { name: 'entities' }),
+		};
+
+		this.layers.test = () => false;
 
 		this.lightMap = new LightMap(this);
 		this.collisionMap = new CollisionMap(this);
@@ -90,7 +98,7 @@ export default class Level extends THREE.Group {
 
 	create = () => {
 		for (let x = 0; x < this.definition.width / CHUNK_SIZE; x += 1) {
-			for (let y = 0; y < this.definition.width / CHUNK_SIZE; y += 1) {
+			for (let y = 0; y < this.definition.height / CHUNK_SIZE; y += 1) {
 				this.chunks.add(new Chunk(this.game, this, x, y));
 			}
 		}

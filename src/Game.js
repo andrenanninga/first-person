@@ -74,7 +74,7 @@ class Game {
 		}
 
 		this.physics = new Physics(this);
-		this.level = new Level(this, Level.PLAYGROUND)
+		this.level = new Level(this, Level.CAVE)
 
 		this.scene.add(this.level);
 		this.player = this.level.getObjectByName('player');

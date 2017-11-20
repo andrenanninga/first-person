@@ -46,7 +46,7 @@ export default class Chunk extends THREE.Group {
 
 		for (let x = 0; x < CHUNK_SIZE; x++) {
 			for (let y = 0; y < CHUNK_SIZE; y++) {
-				const tile = this.level.floor.data[this.coordToIndex(x, y)];
+				const tile = this.level.layers.floor.data[this.coordToIndex(x, y)];
 				const color = this.level.light(this.coordToIndex(x, y));
 
 				if (tile === 0) {
@@ -76,7 +76,7 @@ export default class Chunk extends THREE.Group {
 
 		for (let x = 0; x < CHUNK_SIZE; x++) {
 			for (let y = 0; y < CHUNK_SIZE; y++) {
-				const tile = this.level.ceiling.data[this.coordToIndex(x, y)];
+				const tile = this.level.layers.ceiling.data[this.coordToIndex(x, y)];
 				const color = this.level.light(this.coordToIndex(x, y));
 
 				if (tile === 0) {
@@ -113,8 +113,8 @@ export default class Chunk extends THREE.Group {
 
 		for (let x = 0; x < CHUNK_SIZE; x++) {
 			for (let y = 0; y < CHUNK_SIZE; y++) {
-				const floor = this.level.floor.data[this.coordToIndex(x, y)];
-				const wall = this.level.walls.data[this.coordToIndex(x, y)];
+				const floor = this.level.layers.floor.data[this.coordToIndex(x, y)];
+				const wall = this.level.layers.collision.data[this.coordToIndex(x, y)];
 
 				if (wall) {
 					this.game.physics.addRectangle(
@@ -138,7 +138,7 @@ export default class Chunk extends THREE.Group {
 				}
 
 				directions.forEach(({ offset, rotation }) => {
-					const tile = this.level.walls.data[this.coordToIndex(x + offset.x, y + offset.y)];
+					const tile = this.level.layers.walls.data[this.coordToIndex(x + offset.x, y + offset.y)];
 
 					if (!tile) {
 						return;
