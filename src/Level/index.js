@@ -4,7 +4,6 @@ import { find, flatten } from 'lodash';
 import { CHUNK_SIZE } from '../config';
 import Chunk from './Chunk';
 import LightMap from './LightMap';
-import CollisionMap from './CollisionMap';
 import getTiles from './tiles';
 
 import Player from '../entities/Player';
@@ -35,10 +34,6 @@ export default class Level extends THREE.Group {
 		return this.lightMap.getLight(...args);
 	}
 
-	solid(...args) {
-		return this.collisionMap.isSolid(...args);
-	}
-
 	getWalls() {
 		return flatten(this.chunks.children.map(chunk => chunk.walls.children));
 	}
@@ -62,12 +57,9 @@ export default class Level extends THREE.Group {
 
 	load = (level) => {
 		this.definition = this.preprocess(levels[level]);
-		this.tileSize = this.definition.tileheight;
-
-		this.tiles = [new THREE.MeshNormalMaterial()];
-
 		this.chunks = new THREE.Group();
 		this.entities = new THREE.Group();
+		this.tiles = {};
 
 		this.layers = {
 			ceiling: find(this.definition.layers, { name: 'ceiling' }),
@@ -75,12 +67,13 @@ export default class Level extends THREE.Group {
 			floor: find(this.definition.layers, { name: 'floor' }),
 			collision: find(this.definition.layers, { name: 'collision' }),
 			entities: find(this.definition.layers, { name: 'entities' }),
+			face: find(this.definition.layers, { name: 'face' }),
+			cliff: find(this.definition.layers, { name: 'cliff' }),
 		};
 
 		this.layers.test = () => false;
 
 		this.lightMap = new LightMap(this);
-		this.collisionMap = new CollisionMap(this);
 
 		const loader = new THREE.TextureLoader(this.game.loader);
 
@@ -92,8 +85,12 @@ export default class Level extends THREE.Group {
 			const tsx = requireTsx(source.replace('../../sprites/', './'));
 			const tiles = getTiles(this.game, tsx);
 
-			this.tiles.splice(firstgid, 0, ...tiles);
+			tiles.forEach((tile, index) => {
+				this.tiles[index + firstgid] = tile;
+			});
 		});
+
+		console.log(this.tiles);
 	}
 
 	create = () => {

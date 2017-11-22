@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import Matter from 'matter-js';
+import { uniq, map } from 'lodash';
 
 import { CATEGORY } from '../Physics';
 import { CHUNK_SIZE } from '../config';
 
-export default class Chunk extends THREE.Group {
+export default class Chunk extends THREE.Mesh {
 
 	constructor(game, level, x, y) {
 		super();
@@ -23,39 +24,43 @@ export default class Chunk extends THREE.Group {
 				new THREE.MeshNormalMaterial()
 			);
 
-			box.position.x = CHUNK_SIZE / 2 - 0.5;
+			box.position.x = this.position.x + CHUNK_SIZE / 2 - 0.5;
 			box.position.y = 0.5;
-			box.position.z = CHUNK_SIZE / 2 - 0.5;
+			box.position.z = this.position.z + CHUNK_SIZE / 2 - 0.5;
 
 			const helper = new THREE.BoxHelper(box, 0xff0000);
 			helper.update = () => {};
-			this.add(helper);
+			this.level.add(helper);
 		}
 
-		this.floor = this.addFloor();
-		this.walls = this.addWalls();
-		this.ceiling = this.addCeiling();
+		this.meshes = [];
+		this.addFloor();
+		this.addWalls();
+		this.addCeiling();
+		this.addCliff();
 
-		this.add(this.floor);
-		this.add(this.walls);
-		this.add(this.ceiling);
+		this.geometry = new THREE.Geometry();
+		this.material = uniq(map(this.level.tiles, tile => tile.material));
+		this.meshes.forEach(child => {
+			child.updateMatrix();
+			this.geometry.merge(child.geometry, child.matrix, this.material.indexOf(child.material));
+		});
 	}
 
 	addFloor() {
-		const group = new THREE.Group();
-
 		for (let x = 0; x < CHUNK_SIZE; x++) {
 			for (let y = 0; y < CHUNK_SIZE; y++) {
-				const tile = this.level.layers.floor.data[this.coordToIndex(x, y)];
+				const index = this.level.layers.floor.data[this.coordToIndex(x, y)];
 				const color = this.level.light(this.coordToIndex(x, y));
+				const tile = this.level.tiles[index];
 
-				if (tile === 0) {
+				if (index === 0) {
 					continue;
 				}
 
 				const plane = new THREE.Mesh(
 					new THREE.PlaneGeometry(1, 1),
-					this.level.tiles[tile]
+					tile.material
 				);
 
 				plane.position.x = x;
@@ -63,29 +68,32 @@ export default class Chunk extends THREE.Group {
 				plane.rotation.x = -Math.PI / 2;
 
 				plane.geometry.faces.forEach(face => face.color = color);
+				plane.geometry.faceVertexUvs[0].forEach(face => {
+					face.forEach(corner => {
+						corner.x = tile.uv.x + tile.size.x * corner.x;
+						corner.y = tile.uv.y - tile.size.y * corner.y;
+					});
+				});
 
-				group.add(plane);
+				this.meshes.push(plane);
 			}
 		}
-
-		return group;
 	}
 
 	addCeiling() {
-		const group = new THREE.Group();
-
 		for (let x = 0; x < CHUNK_SIZE; x++) {
 			for (let y = 0; y < CHUNK_SIZE; y++) {
-				const tile = this.level.layers.ceiling.data[this.coordToIndex(x, y)];
+				const index = this.level.layers.ceiling.data[this.coordToIndex(x, y)];
 				const color = this.level.light(this.coordToIndex(x, y));
+				const tile = this.level.tiles[index];
 
-				if (tile === 0) {
+				if (index === 0) {
 					continue;
 				}
 
 				const plane = new THREE.Mesh(
 					new THREE.PlaneGeometry(1, 1),
-					this.level.tiles[tile]
+					tile.material
 				);
 
 				plane.position.x = x;
@@ -94,12 +102,16 @@ export default class Chunk extends THREE.Group {
 				plane.rotation.x = Math.PI / 2;
 
 				plane.geometry.faces.forEach(face => face.color = color);
+				plane.geometry.faceVertexUvs[0].forEach(face => {
+					face.forEach(corner => {
+						corner.x = tile.uv.x + tile.size.x * corner.x;
+						corner.y = tile.uv.y - tile.size.y * corner.y;
+					});
+				});
 
-				group.add(plane);
+				this.meshes.push(plane);
 			}
 		}
-
-		return group;
 	}
 
 	addWalls() {
@@ -117,20 +129,17 @@ export default class Chunk extends THREE.Group {
 				const wall = this.level.layers.collision.data[this.coordToIndex(x, y)];
 
 				if (wall) {
-					this.game.physics.addRectangle(
-						x + this.position.x,
-						y + this.position.z,
-						1,
-						1,
-						{
-							isStatic: true,
-							collisionFilter: { category: CATEGORY.WALL },
-							render: {
-								fillStyle: '#444',
-								strokeStyle: '#444',
-								lineWidth: 1,
-							}
-						});
+					const config = {
+						isStatic: true,
+						collisionFilter: { category: CATEGORY.WALL },
+						render: {
+							fillStyle: '#444',
+							strokeStyle: '#444',
+							lineWidth: 1,
+						}
+					};
+
+					this.game.physics.addRectangle(x + this.position.x, y + this.position.z, 1, 1, config);
 				}
 
 				if (floor === 0) {
@@ -138,32 +147,96 @@ export default class Chunk extends THREE.Group {
 				}
 
 				directions.forEach(({ offset, rotation }) => {
-					const tile = this.level.layers.walls.data[this.coordToIndex(x + offset.x, y + offset.y)];
+					const index = this.level.layers.walls.data[this.coordToIndex(x + offset.x, y + offset.y)];
+					const tile = this.level.tiles[index];
 
-					if (!tile) {
+					if (!index) {
 						return;
 					}
 
 					const color = this.level.light(this.coordToIndex(x, y));
 					const plane = new THREE.Mesh(
 						new THREE.PlaneGeometry(1, 1),
-						this.level.tiles[tile]
+						tile.material,
 					);
-	
+
 					plane.position.x = x + (offset.x / 2);
 					plane.position.y = 0.5;
 					plane.position.z = y + (offset.y / 2);
 					plane.rotation.y = rotation,
 	
 					plane.geometry.faces.forEach(face => face.color = color);
+					plane.geometry.faceVertexUvs[0].forEach(face => {
+						face.forEach(corner => {
+							corner.x = tile.uv.x + tile.size.x * corner.x;
+							corner.y = tile.uv.y - tile.size.y * corner.y;
+						});
+					});
 	
-					group.add(plane);
+					this.meshes.push(plane);
 				});
 			}
 		}
+	}
 
+	addCliff() {
+		const group = new THREE.Group();
+		const directions = [
+			{ offset: { x: 0, y: -1 }, rotation: Math.PI }, // North
+			{ offset: { x: -1, y: 0 }, rotation: -Math.PI / 2 }, // East
+			{ offset: { x: 0, y: 1 }, rotation: 0 }, // South
+			{ offset: { x: 1, y: 0 }, rotation: Math.PI / 2 }, // West
+		];
 
-		return group;
+		for (let x = 0; x < CHUNK_SIZE; x++) {
+			for (let y = 0; y < CHUNK_SIZE; y++) {
+				const index = this.level.layers.cliff.data[this.coordToIndex(x, y)];
+				const floor = this.level.layers.floor.data[this.coordToIndex(x, y)];
+				const ceiling = this.level.layers.ceiling.data[this.coordToIndex(x, y)];
+				const tile = this.level.tiles[index];
+
+				if (index === 0) {
+					continue;
+				}
+
+				directions.forEach(({ offset, rotation }) => {
+					const color = this.level.light(this.coordToIndex(x, y));
+					const neighborFloor = this.level.layers.floor.data[this.coordToIndex(x + offset.x, y + offset.y)];
+
+					for (let i = -5; i < 10; i++) {
+						if (i === 0) {
+							continue;
+						}
+						else if (i < 0 && !floor) {
+							continue;
+						}
+						else if (i > 0 && (!ceiling && floor)) {
+							continue;
+						}
+
+						const plane = new THREE.Mesh(
+							new THREE.PlaneGeometry(1, 1),
+							tile.material,
+						);
+		
+						plane.position.x = x + (offset.x / 2);
+						plane.position.y = i + 0.5;
+						plane.position.z = y + (offset.y / 2);
+						plane.rotation.y = rotation;
+		
+						plane.geometry.faces.forEach(face => face.color = color);
+						plane.geometry.faceVertexUvs[0].forEach(face => {
+							face.forEach(corner => {
+								corner.x = tile.uv.x + tile.size.x * corner.x;
+								corner.y = tile.uv.y - tile.size.y * corner.y;
+							});
+						});
+		
+						this.meshes.push(plane);
+					}
+				});
+			}
+		}
 	}
 
 	coordToIndex(x, y) {

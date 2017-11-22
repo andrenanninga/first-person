@@ -14,26 +14,25 @@ export default function getTiles(game, tsx) {
 	texture.magFilter = THREE.NearestFilter;
 	texture.minFilter = THREE.NearestMipMapLinearFilter;
 	
-	const materials = [];
-	
+	const material = new THREE.MeshBasicMaterial({
+		map: texture,
+		vertexColors: THREE.FaceColors,
+	});
+
+	const tiles = []
+
 	for (let i = 0; i < tileCount; i++) {
 		const x = i % columns;
 		const y = Math.floor(i / columns);
 	
-		const uv = new THREE.Vector2(x / columns, 1 - (y / rows) - (1 / rows));
-		const size = new THREE.Vector2(1 / columns, 1 / rows);
+		const uv = new THREE.Vector2(
+			(x % columns) / columns,
+			1 - ((y + 1) / rows),
+		);
+		const size = new THREE.Vector2(1 / columns, -(1 / rows));
 	
-		const material = new THREE.MeshBasicMaterial({
-			map: texture.clone(),
-			vertexColors: THREE.FaceColors,
-		});
-	
-		material.map.needsUpdate = true;
-		material.map.offset = uv;
-		material.map.repeat = size;
-	
-		materials.push(material);
+		tiles.push({ material, uv, size });
 	}
 
-	return materials;
+	return tiles;
 }

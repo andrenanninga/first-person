@@ -24,6 +24,11 @@ if (module.hot) {
 			removeEventListener('resize', window.game.resize);
 			removeEventListener('keydown', window.game.keyDown);
 			removeEventListener('keyup', window.game.keyUp);
+			removeEventListener('mousemove', window.game.mouseMove);
+			removeEventListener('click', window.game.click);
+			document.removeEventListener('pointerlockchange', window.game.pointerLockChange);
+			document.removeEventListener('mozpointerlockchange', window.game.pointerLockChange);
+			document.removeEventListener('webkitpointerlockchange', window.game.pointerLockChange);
 		}
 	});
 }
@@ -41,10 +46,15 @@ class Game {
 		this.camera.position.y = 20;
 		this.camera.position.z = 0;
 
-		this.keys = [];
+		this.keys = {};
 		this.clock = new THREE.Clock(true);
 
+		this.hasPointerLock = false;
 		this.isLoading = true;
+
+		this.debug = {
+			followPlayer: false,
+		};
 
 		this.loader = new THREE.LoadingManager();
 		this.loader.onProgress = (_, loaded, total) => console.log(`loaded ${loaded} of ${total}`);
@@ -74,7 +84,7 @@ class Game {
 		}
 
 		this.physics = new Physics(this);
-		this.level = new Level(this, Level.CAVE)
+		this.level = new Level(this, Level.CAVE);
 
 		this.scene.add(this.level);
 		this.player = this.level.getObjectByName('player');
@@ -83,6 +93,11 @@ class Game {
 		addEventListener('resize', this.resize);
 		addEventListener('keydown', this.keyDown);
 		addEventListener('keyup', this.keyUp);
+		addEventListener('mousemove', this.mouseMove);
+		addEventListener('click', this.click);
+		document.addEventListener('pointerlockchange', this.pointerLockChange);
+		document.addEventListener('mozpointerlockchange', this.pointerLockChange);
+		document.addEventListener('webkitpointerlockchange', this.pointerLockChange);
 
 		this.update();
 	}
@@ -105,8 +120,11 @@ class Game {
 			const half = window.innerWidth / 2;
 			this.camera.aspect = half / 320;
 			this.camera.updateProjectionMatrix();
-			this.camera.position.copy(this.player.position.clone().setY(10));
-			this.controls.target = this.player.position.clone();
+
+			if (this.debug.followPlayer) {
+				this.camera.position.copy(this.player.position.clone().setY(10));
+				this.controls.target = this.player.position.clone();
+			}
 
 			this.renderer.setViewport(half, window.innerHeight - 320, half, 320);
 			this.renderer.setScissor(half, window.innerHeight - 320, half, 320);
@@ -127,17 +145,35 @@ class Game {
 	}
 
 	keyDown = (e) => {
-		if (!this.keys.includes(e.keyCode)) {
-			this.keys.push(e.keyCode);
+		this.keys[e.keyCode] = true;
+
+		if (e.keyCode === 192) {
+			this.debug.followPlayer = !this.debug.followPlayer;
 		}
 	}
 
 	keyUp = (e) => {
-		const index = this.keys.indexOf(e.keyCode);
+		this.keys[e.keyCode] = false;
+	}
 
-		if (index !== -1) {
-			this.keys.splice(index, 1);
+	mouseMove = (e) => {
+		if (this.hasPointerLock) {
+			this.player.rotation.y -= e.movementX * 0.006;
 		}
+	}
+
+	click = (e) => {
+		if (!this.hasPointerLock) {
+			const element = this.renderer.domElement;
+			element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+			element.requestPointerLock();
+		}
+
+		console.log(e);
+	}
+
+	pointerLockChange = (e) => {
+		this.hasPointerLock = !!document.pointerLockElement;
 	}
 }
 

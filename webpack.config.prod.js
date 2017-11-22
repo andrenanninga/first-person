@@ -62,7 +62,7 @@ module.exports = {
 		}),
 		new webpack.NamedModulesPlugin(),
 		new webpack.DefinePlugin({
-			__DEV__: true
+			__DEV__: false
 		}),
 	],
 	watch: false,

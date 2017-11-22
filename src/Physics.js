@@ -55,11 +55,7 @@ export default class Physics {
 	}
 
 	update(delta) {
-		Engine.update(this.engine, delta);
-
-		// this.game.player.rotation.y = -this.body.angle;
-		// this.game.player.position.x = this.body.position.x / SCALE;
-		// this.game.player.position.z = this.body.position.y / SCALE;
+		Engine.update(this.engine);
 
 		if (__DEV__) {
 			Render.lookAt(this.renderer, this.game.player.body, { x: 5 * SCALE, y: 5 * SCALE }, true);

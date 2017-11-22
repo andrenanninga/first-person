@@ -5,7 +5,7 @@ import { flatten } from 'lodash';
 import { CATEGORY } from '../Physics';
 
 const PLAYER_FOV = 75;
-const SPEED = 80;
+const SPEED = 0.0002;
 const TURN = 4;
 
 export default class Player extends THREE.Group {
@@ -43,7 +43,7 @@ export default class Player extends THREE.Group {
 		});
 
 		this.body.friction = 0;
-		this.body.frictionAir = 0.15;
+		this.body.frictionAir = 0.3;
 		this.body.inverseInertia = 0;
 
 		this.add(capsule);
@@ -51,41 +51,44 @@ export default class Player extends THREE.Group {
 
 	update(delta) {
 		const force = new THREE.Vector3(0, 0, 0);
-		const speed = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.y);
 
-		if (this.game.keys.includes(87)) {
+		if (this.game.keys[87]) {
 			force.x = 1;
 		}
-		else if (this.game.keys.includes(83)) {
+		else if (this.game.keys[83]) {
 			force.x = -1;
 		}
 
-		if (this.game.keys.includes(65)) {
+		if (this.game.keys[65]) {
 			force.z = -1;
 		}
-		else if (this.game.keys.includes(68)) {
+		else if (this.game.keys[68]) {
 			force.z = 1;
 		}
 
-		if (this.game.keys.includes(37)) {
+		if (this.game.keys[37]) {
 			Body.rotate(this.body, -delta * TURN);
 		}
-		else if (this.game.keys.includes(39)) {
+		else if (this.game.keys[39]) {
 			Body.rotate(this.body, delta * TURN);
 		}
 
+		this.body.angle = -this.rotation.y;
+
+		force.normalize();
 		force.applyAxisAngle(new THREE.Vector3(0, 1, 0), -this.body.angle);
 		force.multiplyScalar(SPEED);
 
 		Body.applyForce(this.body, this.body.position, { x: force.x, y: force.z });
+		const speed = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.y);
 
-		if (speed.length() > 1) {
+		if (speed.length() > 2) {
 			speed.normalize();
 			this.body.velocity.x = speed.x;
 			this.body.velocity.y = speed.z;
 		}
 
-		this.rotation.y = -this.body.angle;
+		// this.rotation.y = -this.body.angle;
 	}
 
 	render() {
